@@ -1,0 +1,33 @@
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Intellij
+.idea/
+*.eml
+*.iml
+
+# Mac OSX
+.DS_Store
+
+# Build and Distribution Directories
+target/
+dist/
+docs/
+
+# vim tmps
+.*sw*
+
+# sbt
+project/project
+project/target
+.history
+
+# Maven tmps
+*.versionsBackup
+
+# Data paths
+data
+results
+perf/results
