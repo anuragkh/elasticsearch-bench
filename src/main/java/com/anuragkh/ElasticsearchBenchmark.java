@@ -181,11 +181,13 @@ public class ElasticsearchBenchmark {
     private int index;
     private TransportClient session;
     private int localOpsProcessed;
+    private long timebound;
     private double throughput;
     private ProgressLogger logger;
 
-    public LoaderThread(int index, ProgressLogger logger) {
+    public LoaderThread(int index, long timebound, ProgressLogger logger) {
       this.index = index;
+      this.timebound = timebound * 1000;
       this.session = createClient();
       this.logger = logger;
       this.localOpsProcessed = 0;
@@ -220,7 +222,7 @@ public class ElasticsearchBenchmark {
     @Override public void run() {
       int totOpsProcessed = 0;
       long measureStart = System.currentTimeMillis();
-      while (totOpsProcessed != -1) {
+      while (totOpsProcessed != -1 && System.currentTimeMillis() - measureStart < timebound) {
         totOpsProcessed = executeOne();
         if (totOpsProcessed % REPORT_RECORD_INTERVAL == 0) {
           logger.logProgress(totOpsProcessed);
@@ -234,17 +236,18 @@ public class ElasticsearchBenchmark {
     }
   }
 
-  public void loadPackets(int numThreads) {
+  public void loadPackets(int numThreads, long timebound) {
 
     LoaderThread[] threads = new LoaderThread[numThreads];
     ProgressLogger logger = new ProgressLogger("record_progress");
 
     for (int i = 0; i < numThreads; i++) {
       LOG.info("Initializing thread " + i + "...");
-      threads[i] = new LoaderThread(i, logger);
+      threads[i] = new LoaderThread(i, timebound, logger);
       LOG.info("Thread " + i + " initialization complete.");
     }
 
+    long startTime = System.currentTimeMillis();
     for (LoaderThread thread : threads) {
       thread.start();
     }
@@ -262,6 +265,8 @@ public class ElasticsearchBenchmark {
     } catch (IOException e) {
       LOG.severe("I/O exception writing to output file: " + e.getMessage());
     }
+    long endTime = System.currentTimeMillis();
+    LOG.info("Finished loading packets in " + (endTime - startTime) / 1000 + "s");
 
     logger.close();
   }

@@ -15,6 +15,9 @@ public class BenchmarkMain {
     Option hostnameOpt = new Option("h", true, "Server hostname.");
     options.addOption(hostnameOpt);
 
+    Option timeboundOpt = new Option("t", true, "Maximum benchmark time.");
+    options.addOption(timeboundOpt);
+
     Option numAttrsOpt = new Option("a", true, "Attribute Path.");
     numAttrsOpt.setRequired(true);
     options.addOption(numAttrsOpt);
@@ -46,10 +49,15 @@ public class BenchmarkMain {
       hostname = cmd.getOptionValue('h');
     }
 
+    long timebound = Long.MAX_VALUE;
+    if (cmd.hasOption('t')) {
+      timebound = Long.parseLong(cmd.getOptionValue('t'));
+    }
+
     String attrPath = cmd.getOptionValue('a');
     String dataPath = cmd.getOptionValue('i');
 
     ElasticsearchBenchmark benchmark = new ElasticsearchBenchmark(hostname, dataPath, attrPath);
-    benchmark.loadPackets(numThreads);
+    benchmark.loadPackets(numThreads, timebound);
   }
 }
